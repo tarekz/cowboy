@@ -1,4 +1,4 @@
-%% Copyright (c) 2011-2013, Loïc Hoguin <essen@ninenines.eu>
+%% Copyright (c) 2011-2013, LoÃ¯c Hoguin <essen@ninenines.eu>
 %%
 %% Permission to use, copy, modify, and/or distribute this software for any
 %% purpose with or without fee is hereby granted, provided that the above
@@ -66,28 +66,37 @@ execute(Req, Env) ->
 	when Req::cowboy_req:req().
 handler_init(Req, State, Handler, HandlerOpts) ->
 	Transport = cowboy_req:get(transport, Req),
+  error_logger:error_msg("** Cowboy handler inside handle_init~n"),
 	try Handler:init({Transport:name(), http}, Req, HandlerOpts) of
 		{ok, Req2, HandlerState} ->
+      error_logger:error_msg("** {ok, Req2, HandlerState}= {ok, ~p, ~p}~n",[Req2, HandlerState]),
 			handler_handle(Req2, State, Handler, HandlerState);
 		{loop, Req2, HandlerState} ->
+      error_logger:error_msg("** {loop, Req2, HandlerState}= {loop, ~p, ~p}~n",[Req2, HandlerState]),
 			handler_after_callback(Req2, State, Handler, HandlerState);
 		{loop, Req2, HandlerState, hibernate} ->
+      error_logger:error_msg("** {loop, Req2, HandlerState, hibernate}= {loop, ~p, ~p, hibernate}~n",[Req2, HandlerState]),
 			handler_after_callback(Req2, State#state{hibernate=true},
 				Handler, HandlerState);
 		{loop, Req2, HandlerState, Timeout} ->
+      error_logger:error_msg("** {loop, Req2, HandlerState, Timeout}= {loop, ~p, ~p, ~p}~n",[Req2, HandlerState, Timeout]),
 			State2 = handler_loop_timeout(State#state{loop_timeout=Timeout}),
 			handler_after_callback(Req2, State2, Handler, HandlerState);
 		{loop, Req2, HandlerState, Timeout, hibernate} ->
+      error_logger:error_msg("** {loop, Req2, HandlerState, Timeout, hibernate}= {loop, ~p, ~p, ~p, hibernate}~n",[Req2, HandlerState, Timeout]),
 			State2 = handler_loop_timeout(State#state{
 				hibernate=true, loop_timeout=Timeout}),
 			handler_after_callback(Req2, State2, Handler, HandlerState);
 		{shutdown, Req2, HandlerState} ->
+      error_logger:error_msg("** {shutdown, Req2, HandlerState}= {shutdown, ~p, ~p}~n",[Req2, HandlerState]),
 			terminate_request(Req2, State, Handler, HandlerState,
 				{normal, shutdown});
 		%% @todo {upgrade, transport, Module}
 		{upgrade, protocol, Module} ->
+      error_logger:error_msg("** {upgrade, protocol, Module}= {ok, protocol, ~p}~n",[Module]),
 			upgrade_protocol(Req, State, Handler, HandlerOpts, Module);
 		{upgrade, protocol, Module, Req2, HandlerOpts2} ->
+      error_logger:error_msg("** {upgrade, protocol, Module, Req2, HandlerOpts2}= {ok, protocol, ~p, ~p, ~p}~n",[Module, Req2, HandlerOpts2]),
 			upgrade_protocol(Req2, State, Handler, HandlerOpts2, Module)
 	catch Class:Reason ->
 		error_logger:error_msg(
